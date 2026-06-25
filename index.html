@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GTO Trainer — Poker Solver Clone</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">♠</span>
+      <span class="brand-name">GTO <b>Trainer</b></span>
+      <span class="brand-sub">Poker Solver Clone</span>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-view="study">Study</button>
+      <button class="tab" data-view="play">実戦</button>
+      <button class="tab" data-view="trainer">Trainer</button>
+      <button class="tab" data-view="solver">Solver</button>
+      <button class="tab" data-view="builder">Range Builder</button>
+      <button class="tab" data-view="equity">Equity</button>
+      <button class="tab" data-view="stats">成績</button>
+      <button class="tab" data-view="about">About</button>
+    </nav>
+  </header>
+
+  <main id="app">
+    <!-- ===== STUDY ===== -->
+    <section class="view view-study active" id="view-study">
+      <aside class="sidebar" id="scenario-list"></aside>
+
+      <div class="board-area">
+        <div class="spot-header">
+          <h2 id="spot-title">—</h2>
+          <p id="spot-desc"></p>
+        </div>
+
+        <div class="matrix-wrap">
+          <div class="matrix" id="matrix"></div>
+        </div>
+
+        <div class="display-toggle" id="display-toggle">
+          <button data-mode="strategy" class="active">Strategy</button>
+          <button data-mode="ev">Strategy + EV</button>
+        </div>
+      </div>
+
+      <aside class="info-panel">
+        <div class="legend" id="legend"></div>
+
+        <div class="range-summary">
+          <h3>レンジ全体の頻度</h3>
+          <div id="agg-bars"></div>
+        </div>
+
+        <div class="hand-detail" id="hand-detail">
+          <h3>ハンド詳細</h3>
+          <div class="hd-empty">マトリクスのハンドにカーソルを合わせてください</div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ===== TRAINER ===== -->
+    <section class="view view-trainer" id="view-trainer">
+      <div class="trainer-stage">
+        <div class="trainer-config" id="trainer-config"></div>
+        <div class="poker-table" id="poker-table"></div>
+        <div class="trainer-question" id="trainer-question"></div>
+        <div class="trainer-actions" id="trainer-actions"></div>
+        <div class="trainer-feedback" id="trainer-feedback"></div>
+      </div>
+      <aside class="trainer-score" id="trainer-score"></aside>
+    </section>
+
+    <!-- ===== 実戦 (リングゲーム) ===== -->
+    <section class="view view-play" id="view-play">
+      <div class="play-stage">
+        <div class="play-toolbar" id="play-range-toggle"></div>
+        <div class="play-table" id="play-table"></div>
+        <div class="play-controls" id="play-controls"></div>
+        <div class="play-range" id="play-range"></div>
+      </div>
+      <aside class="play-side">
+        <div class="play-order" id="play-order"></div>
+        <div class="play-review" id="play-review"></div>
+      </aside>
+    </section>
+
+    <!-- ===== SOLVER (postflop) ===== -->
+    <section class="view view-solver" id="view-solver">
+      <div class="solver-stage">
+        <div class="solver-controls" id="solver-controls"></div>
+        <p class="solver-desc" id="solver-desc"></p>
+        <div class="solver-board" id="solver-board"></div>
+        <div class="matrix-wrap"><div class="matrix" id="solver-matrix"></div></div>
+      </div>
+      <aside class="solver-result" id="solver-result"></aside>
+    </section>
+
+    <!-- ===== RANGE BUILDER ===== -->
+    <section class="view view-builder" id="view-builder">
+      <div class="builder-stage">
+        <div class="builder-controls" id="builder-controls"></div>
+        <div class="matrix-wrap"><div class="matrix" id="builder-matrix"></div></div>
+        <p class="builder-hint">マトリクスをクリック／ドラッグして自分のレンジを塗り、「GTOと比較」で一致度を採点します</p>
+      </div>
+      <aside class="builder-result" id="builder-result"></aside>
+    </section>
+
+    <!-- ===== 成績 ダッシュボード ===== -->
+    <section class="view view-stats" id="view-stats">
+      <div class="stats-card" id="stats-card"></div>
+    </section>
+
+    <!-- ===== EQUITY ===== -->
+    <section class="view view-equity" id="view-equity">
+      <div class="equity-card" id="equity-card"></div>
+    </section>
+
+    <!-- ===== ABOUT ===== -->
+    <section class="view view-about" id="view-about">
+      <div class="about-card" id="about-card"></div>
+    </section>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
