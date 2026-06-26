@@ -558,16 +558,23 @@ function renderReview(seatWin) {
   const winnerSeats = Object.keys(seatWin).map((s) => G.players[+s]);
   const winNames = winnerSeats.map((p) => `${p.name}(${p.pos}) ${handTypeName(p.hole, G.board)}`).join('、');
 
-  $('play-review').innerHTML = `
-    <div class="rv-card">
+  // テーブル直下（play-controls）に「結果＋次へボタン」を出す。
+  // スマホでもPCでもスクロール不要で押せ、テーブルを見たまま勉強→次へ進める。
+  $('play-controls').innerHTML = `
+    <div class="rv-top">
       <div class="rv-result ${net >= 0 ? 'win' : 'lose'}">
         ${net >= 0 ? '🏆 +' + fmt(net) : '▼ ' + fmt(net)} bb
         <span class="rv-winner">勝者: ${winNames}</span>
       </div>
+      <button class="rv-next" id="rv-next">次のハンドへ ▶</button>
+      <div class="rv-scroll-hint">↓ 下に全員のハンドとアクションの解説</div>
+    </div>`;
+  // 詳細な学習用レビュー（ボード・全員のハンド・意図）は下に表示
+  $('play-review').innerHTML = `
+    <div class="rv-card">
       <div class="rv-board">ボード: ${G.board.map((c) => cardHTML(c, true)).join('')}</div>
       <div class="rv-hist-title">全プレイヤーのアクションと意図</div>
       <div class="rv-hist">${histHTML}</div>
-      <button class="rv-next" id="rv-next">納得した → 次のハンドへ ▶</button>
     </div>`;
   $('rv-next').addEventListener('click', () => newHand());
 }

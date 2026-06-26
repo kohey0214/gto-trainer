@@ -104,7 +104,15 @@ function buildTags() {
 
 function questionText() {
   const g = state.scn.group;
-  if (g === 'RFI') return `あなたは <b>${state.scn.hero}</b>。全員フォールドであなたの番です。アクションは？`;
+  if (g === 'RFI') {
+    const hero = state.scn.hero;
+    // UTG はプリフロップで最初に行動するポジション。前に誰もいないので「全員フォールド」はありえない
+    if (hero === 'UTG') {
+      return `あなたは <b>UTG</b>（アンダー・ザ・ガン＝プリフロップで最初に行動するポジション）。ファーストインのアクションは？`;
+    }
+    // それ以外は「自分の前のプレイヤーが全員フォールドして回ってきた」状況
+    return `あなたまで全員フォールドで回ってきました。<b>${hero}</b> のあなたのアクションは？`;
+  }
   const opener = state.scn.id === 'bb_vs_btn' ? 'BTN' : 'CO';
   return `<b>${opener}</b> が 2.5bb にオープン。<b>${state.scn.hero}</b> のあなたの対応は？`;
 }
