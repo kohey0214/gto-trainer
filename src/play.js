@@ -306,10 +306,16 @@ function heroAct(type, addAmount, intentBuilder) {
   const last = G.history[G.history.length - 1];
   last.grade = grade.g; last.gradeColor = grade.color; last.rec = rec.intent;
   render();
-  if (type === 'fold' && !G.heroReachedRiver) {
-    // リバー未到達のフォールド → 即次ハンドへ（ファストフォールド）
-    G.toAct = (G.toAct + 1) % 6;
-    finishOrContinueFast();
+  if (type === 'fold') {
+    if (G.street === 'preflop') {
+      // プリフロップのフォールドは頻度が高いので即次のハンドへ
+      G.toAct = (G.toAct + 1) % 6;
+      finishOrContinueFast();
+      return;
+    }
+    // ポストフロップ(フロップ/ターン/リバー)のフォールド →
+    // 相手の手札を公開してレビュー表示。「相手がどんなハンドでベットしたか」を学べる
+    revealFoldReview();
     return;
   }
   G.toAct = (G.toAct + 1) % 6;
@@ -323,6 +329,16 @@ function finishOrContinueFast() {
   $('play-controls').innerHTML = '';
   $('play-review').innerHTML = `<div class="pl-fast">フォールドしました。次のハンドへ…</div>`;
   setTimeout(() => { newHand(); }, 900);
+}
+
+function revealFoldReview() {
+  // ポストフロップでHeroがフォールドした時：まだ降りていない相手の手札を公開して
+  // 「どんなハンドでベットしてきたか」をレビューで確認できるようにする
+  G.done = true;
+  recordStats(-G.players[0].totalInvested);
+  G.players.forEach((p) => { if (!p.folded) p.revealed = true; });
+  render();
+  renderReview(null); // null = ショーダウンではなくフォールド時レビュー
 }
 
 // ---- ハンド終了 ----
@@ -534,9 +550,9 @@ function renderHeroControls() {
 
 function renderReview(seatWin) {
   $('play-controls').innerHTML = '';
-  const heroWon = (seatWin[0] || 0) > 0;
+  const heroFold = !seatWin;                       // null = ポストフロップのフォールド時レビュー
   const heroInvest = G.players[0].totalInvested;
-  const net = (seatWin[0] || 0) - heroInvest;
+  const net = heroFold ? -heroInvest : (seatWin[0] || 0) - heroInvest;
   // ストリート別履歴
   const byStreet = { preflop: [], flop: [], turn: [], river: [] };
   G.history.forEach((h) => byStreet[h.street] && byStreet[h.street].push(h));
@@ -557,17 +573,29 @@ function renderReview(seatWin) {
     });
     histHTML += `</div>`;
   }
-  const winnerSeats = Object.keys(seatWin).map((s) => G.players[+s]);
-  const winNames = winnerSeats.map((p) => `${p.name}(${p.pos}) ${handTypeName(p.hole, G.board)}`).join('、');
+  let resultHTML;
+  if (heroFold) {
+    const st = { flop: 'フロップ', turn: 'ターン', river: 'リバー' }[G.street] || '';
+    resultHTML = `
+      <div class="rv-result lose">
+        ▼ ${fmt(net)} bb
+        <span class="rv-winner">${st}でフォールド — 相手の手札を公開（どんなハンドでベットしたか確認）</span>
+      </div>`;
+  } else {
+    const winnerSeats = Object.keys(seatWin).map((s) => G.players[+s]);
+    const winNames = winnerSeats.map((p) => `${p.name}(${p.pos}) ${handTypeName(p.hole, G.board)}`).join('、');
+    resultHTML = `
+      <div class="rv-result ${net >= 0 ? 'win' : 'lose'}">
+        ${net >= 0 ? '🏆 +' + fmt(net) : '▼ ' + fmt(net)} bb
+        <span class="rv-winner">勝者: ${winNames}</span>
+      </div>`;
+  }
 
   // テーブル直下（play-controls）に「結果＋次へボタン」を出す。
   // スマホでもPCでもスクロール不要で押せ、テーブルを見たまま勉強→次へ進める。
   $('play-controls').innerHTML = `
     <div class="rv-top">
-      <div class="rv-result ${net >= 0 ? 'win' : 'lose'}">
-        ${net >= 0 ? '🏆 +' + fmt(net) : '▼ ' + fmt(net)} bb
-        <span class="rv-winner">勝者: ${winNames}</span>
-      </div>
+      ${resultHTML}
       <button class="rv-next" id="rv-next">次のハンドへ ▶</button>
       <div class="rv-scroll-hint">↓ 下に全員のハンドとアクションの解説</div>
     </div>`;
