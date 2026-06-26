@@ -478,23 +478,22 @@ function renderHeroControls() {
   //  - ポストフロップ: 相手がベット済み(0超え) → こちらのレイズはリレイズ
   // この場合はポット比ではなく「相手のベット額の◯倍」でサイズを出す
   const facingRaise = G.street === 'preflop' ? G.currentBet > BB : G.currentBet > 0;
-  // サイズボタン生成（フラクション=ポット比）。不正・オールイン相当・最小レイズ未満は除外
-  const mkSize = (ratio, frac) => {
-    const to = isRaise ? +(G.currentBet + frac * pot).toFixed(1) : +(frac * pot).toFixed(1);
+  // 「レイズ to ◯◯bb」は必ず 0.5bb 刻みに丸める（中途半端な 2.9bb / 3.3bb を出さない）
+  const r05 = (x) => Math.round(x * 2) / 2;
+  const mkBtn = (label, toRaw) => {
+    const to = r05(toRaw);
     const add = +(to - p.betThisStreet).toFixed(1);
     if (add <= 0 || add >= p.stack) return '';            // 無効 or オールイン相当
     if (isRaise && to < minRaiseTo - 0.001) return '';     // 最小レイズ未満は不可
     if (!isRaise && to < BB - 0.001) return '';            // 最小ベット未満
-    return `<button class="act-btn raise" data-a="${isRaise ? 'raise' : 'bet'}" data-add="${add}">${verb} ${ratio}<br><b>${fmt(to)}bb</b></button>`;
+    return `<button class="act-btn raise" data-a="${isRaise ? 'raise' : 'bet'}" data-add="${add}">${label}<br><b>${fmt(to)}bb</b></button>`;
   };
-  // 倍率ボタン（3ベット/リレイズ）: 相手の現在ベット額の mult 倍まで上げる
-  const mkMult = (mult) => {
-    const to = +(mult * G.currentBet).toFixed(1);
-    const add = +(to - p.betThisStreet).toFixed(1);
-    if (add <= 0 || add >= p.stack) return '';            // 無効 or オールイン相当
-    if (to < minRaiseTo - 0.001) return '';                // 最小レイズ未満は不可
-    return `<button class="act-btn raise" data-a="raise" data-add="${add}">レイズ ${mult}x<br><b>${fmt(to)}bb</b></button>`;
-  };
+  // ポット比（ポストフロップのベット/レイズ）
+  const mkSize = (ratio, frac) => mkBtn(`${verb} ${ratio}`, isRaise ? G.currentBet + frac * pot : frac * pot);
+  // 相手のベット額の倍率（3ベット/リレイズ）
+  const mkMult = (mult) => mkBtn(`レイズ ${mult}x`, mult * G.currentBet);
+  // プリフロップのオープン/アイソレート（クリーンな絶対bb: 2.5 / 3 / 4 など）
+  const mkOpen = (toBB) => mkBtn('レイズ', toBB);
   // 1行目: フォールド / チェック・コール / 標準サイズ
   let row1 = `<button class="act-btn fold" data-a="fold">フォールド</button>`;
   if (toCall <= 0.001) row1 += `<button class="act-btn check" data-a="check">チェック</button>`;
@@ -505,10 +504,13 @@ function renderHeroControls() {
       // 3ベット/リレイズ: 相手のベット額に対する倍率（2x/2.5x/3x/4x）
       row1 += mkMult(2) + mkMult(2.5) + mkMult(3);
       row2 += mkMult(4);
+    } else if (G.street === 'preflop') {
+      // プリフロップのオープン: 2.5 / 3 / 4 bb（2倍オープンは出さない）
+      row1 += mkOpen(2.5) + mkOpen(3) + mkOpen(4);
     } else {
-      // オープン/ベット: ポットサイズ比（⅓/½/⅔/ポット ＋ オーバーベット）
+      // ポストフロップのベット: ポット比（⅓/½/⅔/ポット ＋ オーバーベット）
       row1 += mkSize('⅓', 0.33) + mkSize('½', 0.5) + mkSize('⅔', 0.66) + mkSize('ポット', 1.0);
-      row2 += mkSize('1.25x', 1.25) + mkSize('1.5x', 1.5) + mkSize('2x', 2.0);
+      row2 += mkSize('1.5x', 1.5) + mkSize('2x', 2.0);
     }
     row2 += `<button class="act-btn allin" data-a="allin" data-add="${p.stack.toFixed(1)}">オールイン<br><b>${fmt(p.stack)}bb</b></button>`;
   }

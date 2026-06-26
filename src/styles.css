@@ -469,23 +469,24 @@ body {
     width: 100%; aspect-ratio: 5 / 4;
     border-width: 8px;
   }
-  .seat { width: 76px; padding: 4px 4px; border-radius: 8px; }
-  .seat-top { font-size: 10px; gap: 3px; margin-bottom: 2px; }
-  .pos-badge { font-size: 9px; padding: 1px 4px; }
-  .dealer { width: 13px; height: 13px; font-size: 9px; }
-  .seat-stack { font-size: 9px; }
-  .seat-handname { font-size: 8.5px; }
-  .seat-action { font-size: 9px; padding: 1px 6px; top: -9px; }
-  .seat-bet { font-size: 10px; padding: 2px 7px 2px 5px; gap: 4px; }
-  .seat-bet.above { top: -30px; }
-  .seat-bet.below { bottom: -30px; }
-  .chip { width: 11px; height: 11px; margin-left: -5px; }
-  .chip-amt { font-size: 10px; }
-  .pcard-sm { width: 20px; height: 28px; font-size: 10px; }
-  .pcard-sm span { font-size: 7px; }
+  .seat { width: 92px; padding: 5px 5px; border-radius: 9px; }
+  .seat-top { font-size: 12px; gap: 4px; margin-bottom: 3px; }
+  .pos-badge { font-size: 11px; padding: 1px 5px; }
+  .pname { font-size: 11px; }
+  .dealer { width: 15px; height: 15px; font-size: 10px; }
+  .seat-stack { font-size: 9.5px; }
+  .seat-handname { font-size: 10px; }
+  .seat-action { font-size: 10px; padding: 1px 7px; top: -10px; }
+  .seat-bet { font-size: 11px; padding: 2px 8px 2px 6px; gap: 4px; }
+  .seat-bet.above { top: -32px; }
+  .seat-bet.below { bottom: -32px; }
+  .chip { width: 12px; height: 12px; margin-left: -5px; }
+  .chip-amt { font-size: 11px; }
+  .pcard-sm { width: 27px; height: 37px; font-size: 15px; }
+  .pcard-sm span { font-size: 10px; }
   .board-cards { gap: 4px; }
-  .board-cards .pcard { width: 28px; height: 38px; font-size: 14px; }
-  .board-cards .pcard span { font-size: 10px; }
+  .board-cards .pcard { width: 32px; height: 44px; font-size: 16px; }
+  .board-cards .pcard span { font-size: 11px; }
   .pot-info { font-size: 12px; }
 
   /* 実戦のツールバー・操作・レンジ表は全幅で */
@@ -524,10 +525,15 @@ body {
   .tab { padding: 7px 12px; font-size: 13px; }
 
   .play-table { aspect-ratio: 1 / 1; }
-  .seat { width: 66px; padding: 3px 3px; }
-  .seat-top { font-size: 9px; }
-  .pcard-sm { width: 18px; height: 25px; font-size: 9px; }
-  .board-cards .pcard { width: 25px; height: 34px; font-size: 12px; }
+  .seat { width: 84px; padding: 4px 4px; }
+  .seat-top { font-size: 11px; }
+  .pos-badge { font-size: 10.5px; }
+  .pname { font-size: 10.5px; }
+  .seat-handname { font-size: 9.5px; }
+  .pcard-sm { width: 24px; height: 33px; font-size: 13px; }
+  .pcard-sm span { font-size: 9px; }
+  .board-cards .pcard { width: 30px; height: 41px; font-size: 15px; }
+  .board-cards .pcard span { font-size: 10px; }
 
   /* 操作ボタンは2列に（小画面で文字を読める大きさを優先） */
   .hero-btns .act-btn { flex: 1 1 46%; padding: 10px 4px; }
