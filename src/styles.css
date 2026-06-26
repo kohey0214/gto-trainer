@@ -390,3 +390,141 @@ body {
 .about-card ul { margin-left: 20px; }
 .about-card .tag-ok { color: var(--good); font-weight: 700; }
 .about-card .tag-no { color: var(--bad); font-weight: 700; }
+
+/* =========================================================
+   レスポンシブ（タブレット縦〜スマホ）
+   PCの2〜3カラム横並びを1カラム縦積みに切替え、
+   ページ全体を縦スクロールできるようにする。
+   ========================================================= */
+@media (max-width: 900px) {
+  /* 全体をページスクロールに（パネル個別の固定高さをやめる） */
+  html, body { height: auto; }
+  #app { height: auto; }
+
+  /* ---- トップバー / タブ ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    height: auto; flex-wrap: wrap; gap: 6px; padding: 8px 12px;
+  }
+  .brand { flex: 1 1 auto; min-width: 0; gap: 8px; }
+  .brand-name { font-size: 17px; }
+  .brand-sub { display: none; }
+  .tabs {
+    order: 5; width: 100%;
+    flex-wrap: nowrap; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px; padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: 0 0 auto; white-space: nowrap; padding: 8px 14px; font-size: 13.5px; }
+
+  /* ---- 2〜3カラム → 1カラム縦積み ---- */
+  .view-study,
+  .view-trainer,
+  .view-play,
+  .view-solver,
+  .view-builder {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  /* ステージ（メイン）側：固定高さ・内部スクロール解除 */
+  .board-area,
+  .trainer-stage,
+  .play-stage,
+  .solver-stage,
+  .builder-stage {
+    height: auto; overflow: visible;
+    padding: 14px 10px;
+  }
+
+  /* サイドパネル：左罫線→上罫線、全幅・高さ自動 */
+  .info-panel,
+  .trainer-score,
+  .play-side,
+  .solver-result,
+  .builder-result {
+    border-left: none; border-right: none;
+    border-top: 1px solid var(--line);
+    height: auto; max-height: none; overflow: visible;
+    padding: 16px 12px;
+  }
+
+  /* シナリオ一覧：上部に折り畳んだスクロール枠で置く */
+  .sidebar {
+    border-right: none; border-bottom: 1px solid var(--line);
+    max-height: 150px; overflow-y: auto; padding: 8px 0;
+  }
+
+  /* ---- 実戦：テーブル・座席・操作を縮小 ---- */
+  .play-table {
+    width: 100%; aspect-ratio: 5 / 4;
+    border-width: 8px;
+  }
+  .seat { width: 76px; padding: 4px 4px; border-radius: 8px; }
+  .seat-top { font-size: 10px; gap: 3px; margin-bottom: 2px; }
+  .pos-badge { font-size: 9px; padding: 1px 4px; }
+  .dealer { width: 13px; height: 13px; font-size: 9px; }
+  .seat-stack { font-size: 9px; }
+  .seat-handname { font-size: 8.5px; }
+  .seat-action { font-size: 9px; padding: 1px 6px; top: -9px; }
+  .seat-bet { font-size: 10px; padding: 2px 7px 2px 5px; gap: 4px; }
+  .seat-bet.above { top: -30px; }
+  .seat-bet.below { bottom: -30px; }
+  .chip { width: 11px; height: 11px; margin-left: -5px; }
+  .chip-amt { font-size: 10px; }
+  .pcard-sm { width: 20px; height: 28px; font-size: 10px; }
+  .pcard-sm span { font-size: 7px; }
+  .board-cards { gap: 4px; }
+  .board-cards .pcard { width: 28px; height: 38px; font-size: 14px; }
+  .board-cards .pcard span { font-size: 10px; }
+  .pot-info { font-size: 12px; }
+
+  /* 実戦のツールバー・操作・レンジ表は全幅で */
+  .play-toolbar,
+  .play-controls,
+  .play-range { width: 100%; }
+  #coach-toggle, #rg-toggle { padding: 9px 14px; font-size: 13px; }
+
+  /* ヒーロー操作ボタン：3列均等で折返し */
+  .hero-btns { gap: 6px; }
+  .hero-btns .act-btn {
+    flex: 1 1 28%; min-width: 0;
+    padding: 9px 4px; font-size: 12px;
+  }
+  .hero-btns .act-btn b { font-size: 13px; }
+
+  /* アクション順パネルの行を少しコンパクトに */
+  .po-row { font-size: 12.5px; }
+
+  /* ---- カード系（equity / stats / about） ---- */
+  .view-equity.active,
+  .view-stats.active,
+  .view-about.active { height: auto; padding: 14px 10px; }
+  .equity-card,
+  .stats-card,
+  .about-card { padding: 18px 16px; border-radius: 12px; }
+  .eq-form input { font-size: 16px; } /* iOSのズーム防止（16px以上） */
+  .st-kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* さらに小さい端末（標準的なスマホ縦） */
+@media (max-width: 430px) {
+  :root { font-size: 14px; }
+  .brand-name { font-size: 16px; }
+  .logo { width: 26px; height: 26px; font-size: 16px; }
+  .tab { padding: 7px 12px; font-size: 13px; }
+
+  .play-table { aspect-ratio: 1 / 1; }
+  .seat { width: 66px; padding: 3px 3px; }
+  .seat-top { font-size: 9px; }
+  .pcard-sm { width: 18px; height: 25px; font-size: 9px; }
+  .board-cards .pcard { width: 25px; height: 34px; font-size: 12px; }
+
+  /* 操作ボタンは2列に（小画面で文字を読める大きさを優先） */
+  .hero-btns .act-btn { flex: 1 1 46%; padding: 10px 4px; }
+
+  .spot-header h2 { font-size: 17px; }
+  .matrix-wrap { padding: 6px; }
+}
