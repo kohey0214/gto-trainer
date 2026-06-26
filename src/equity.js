@@ -173,3 +173,37 @@ export function parseCardInput(str) {
   }
   return cards;
 }
+
+// 与えられたカード(最大7枚)から「実際に役を構成する最良の5枚」を総当りで特定する。
+// 表示用に、評価器(evaluate7)と完全に一致する5枚を返す（判定とズレない）。
+export function bestFive(cards) {
+  if (cards.length <= 5) return { cat: Math.floor(evaluate7(cards) / 1e10), cards: cards.slice(), score: evaluate7(cards) };
+  let best = -1, combo = null;
+  const n = cards.length;
+  for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) for (let c = b + 1; c < n; c++)
+    for (let d = c + 1; d < n; d++) for (let e = d + 1; e < n; e++) {
+      const five = [cards[a], cards[b], cards[c], cards[d], cards[e]];
+      const sc = evaluate7(five);
+      if (sc > best) { best = sc; combo = five; }
+    }
+  return { cat: Math.floor(best / 1e10), cards: combo, score: best };
+}
+
+// Heroの「強い役のドロー」を検出。次の1枚で straight(4)+ に上がるアウツを役カテゴリ別に返す。
+// 戻り値: { [cat]: { ranks:Set, suits:Set, cards:Set } } （ranks/suits は 0始まり）
+// cat: 4=ストレート 5=フラッシュ 6=フルハウス 7=クアッズ 8=ストレートフラッシュ
+export function heroDraws(hole, board) {
+  const used = new Set([...hole, ...board]);
+  const cur = bestFive([...hole, ...board]).cat;
+  const byCat = {};
+  for (let c = 0; c < 52; c++) {
+    if (used.has(c)) continue;
+    const nc = bestFive([...hole, ...board, c]).cat;
+    if (nc < 4 || nc <= cur) continue;          // 強い役(ストレート以上)へ昇格する時だけ
+    (byCat[nc] ||= { ranks: new Set(), suits: new Set(), cards: new Set() });
+    if (nc === 5) byCat[nc].suits.add(c % 4);    // フラッシュ → スート
+    else if (nc === 8) byCat[nc].cards.add(c);   // SF → 具体カード
+    else byCat[nc].ranks.add(Math.floor(c / 4)); // ストレート/フルハウス/クアッズ → ランク
+  }
+  return byCat;
+}

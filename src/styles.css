@@ -194,6 +194,11 @@ body {
 .pot-info { position: absolute; top: 31%; left: 50%; transform: translate(-50%, -50%); color: #d7f5e6; font-size: 14px; font-weight: 700; text-shadow: 0 1px 3px #000; }
 .board-cards { position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 5px; }
 .board-empty { color: #9fc4b2; font-size: 12px; }
+/* 次のカード位置に出す「ドロー → 完成役」ヒント */
+.draw-hint { align-self: center; margin-left: 4px; border: 2px dashed #ffd23f; border-radius: 7px; padding: 3px 7px; background: rgba(255,210,63,.1); display: flex; flex-direction: column; gap: 3px; box-shadow: 0 0 10px rgba(255,210,63,.25); }
+.dh-row { text-align: center; line-height: 1.05; }
+.dh-out { display: block; font-size: 14px; font-weight: 800; color: #ffd23f; }
+.dh-name { display: block; font-size: 9.5px; color: #ffe9a8; }
 .seat {
   position: absolute; transform: translate(-50%, -50%); width: 108px;
   background: rgba(8,16,24,.9); border: 1px solid var(--line); border-radius: 10px;

@@ -1,7 +1,7 @@
 // play.js — 実戦リングゲーム（6max）。ルール準拠のテキサスホールデム進行＋GTO風CPU＋リバー到達時の復習。
 import { ALL_HANDS, compileScenario, handStrength } from './poker.js';
 import { SCENARIOS } from '../data/ranges.js';
-import { equity, evaluate7, cardLabel } from './equity.js';
+import { equity, evaluate7, cardLabel, bestFive, heroDraws } from './equity.js';
 
 const $ = (id) => document.getElementById(id);
 const RC = '23456789TJQKA';
@@ -421,6 +421,52 @@ function handTypeName(hole, board) {
   const cat = Math.floor(sc / 1e10);
   return ['ハイカード', 'ワンペア', 'ツーペア', 'トリップス', 'ストレート', 'フラッシュ', 'フルハウス', 'クアッズ', 'ストレートフラッシュ'][cat] || '';
 }
+// ランク表示（10は"10"表記。マークは付けない）
+const SUIT_SYM_IDX = ['♠', '♥', '♦', '♣']; // equity.js の SUIT_CHARS=['s','h','d','c'] と同順
+function rankJP(r) { return ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'][r]; }
+// 成立した役を「どの数字で出来たか」付きで説明（数字のみ・SFだけマーク付き）
+function describeMade(hole, board) {
+  const all = [...hole, ...board];
+  if (all.length < 2) return '';
+  const { cat, cards } = bestFive(all);
+  const ranks = cards.map((c) => Math.floor(c / 4));
+  const counts = {}; ranks.forEach((r) => { counts[r] = (counts[r] || 0) + 1; });
+  const byCount = (n) => Object.keys(counts).filter((r) => counts[r] === n).map(Number).sort((a, b) => b - a);
+  if (cat === 8 || cat === 4) { // ストレート / ストレートフラッシュ
+    const asc = [...ranks].sort((a, b) => a - b);
+    const isWheel = asc.includes(12) && asc.includes(0) && !asc.includes(11);
+    const order = isWheel ? [12, 0, 1, 2, 3] : asc;
+    const txt = order.map(rankJP).join('-');
+    if (cat === 8) return `ストレートフラッシュ（${txt} ${SUIT_SYM_IDX[cards[0] % 4]}）`;
+    return `ストレート（${txt}）`;
+  }
+  if (cat === 7) return `クアッズ（${rankJP(byCount(4)[0])}）`;
+  if (cat === 6) return `フルハウス（${rankJP(byCount(3)[0])}×3・${rankJP(byCount(2)[0])}×2）`;
+  if (cat === 5) return `フラッシュ（${[...ranks].sort((a, b) => b - a).map(rankJP).join('-')}）`;
+  if (cat === 3) return `トリップス（${rankJP(byCount(3)[0])}）`;
+  if (cat === 2) { const p = byCount(2); return `ツーペア（${rankJP(p[0])}・${rankJP(p[1])}）`; }
+  if (cat === 1) return `ワンペア（${rankJP(byCount(2)[0])}）`;
+  return `ハイカード（${rankJP(Math.max(...ranks))}）`;
+}
+// Heroの強いドロー（次の1枚で完成する役）を「アウツ→役」で表示するHTML
+function drawHintHTML() {
+  const hero = G.players[0];
+  if (!hero || hero.folded || G.done) return '';
+  if (!(G.street === 'flop' || G.street === 'turn')) return '';
+  const d = heroDraws(hero.hole, G.board);
+  const cats = Object.keys(d).map(Number).sort((a, b) => b - a); // 強い役から
+  if (!cats.length) return '';
+  const NAME = { 4: 'ストレート', 5: 'フラッシュ', 6: 'フルハウス', 7: 'クアッズ', 8: 'ストレートF' };
+  const rows = cats.map((cat) => {
+    const o = d[cat];
+    let outs = '';
+    if (o.ranks.size) outs = [...o.ranks].sort((a, b) => a - b).map(rankJP).join('/');
+    else if (o.suits.size) outs = [...o.suits].map((s) => SUIT_SYM_IDX[s]).join('/');
+    else if (o.cards.size) outs = [...o.cards].map((c) => rankJP(Math.floor(c / 4)) + SUIT_SYM_IDX[c % 4]).join('/');
+    return `<div class="dh-row"><span class="dh-out">${outs}</span><span class="dh-name">${NAME[cat]}</span></div>`;
+  }).join('');
+  return `<div class="draw-hint" title="次のカードで完成する役">${rows}</div>`;
+}
 function cardHTML(idx, small) {
   const lbl = cardLabel(idx); const red = lbl[1] === 'h' || lbl[1] === 'd';
   const sz = small ? 'pcard-sm' : '';
@@ -443,7 +489,7 @@ function render() {
   // テーブル
   const tbl = $('play-table');
   let html = `<div class="pot-info">Pot ${fmt(pot)} bb</div>
-    <div class="board-cards">${G.board.map((c) => cardHTML(c)).join('') || '<span class="board-empty">— プリフロップ —</span>'}</div>`;
+    <div class="board-cards">${G.board.map((c) => cardHTML(c)).join('') || '<span class="board-empty">— プリフロップ —</span>'}${drawHintHTML()}</div>`;
   G.players.forEach((p, s) => {
     const [x, y] = SEAT_XY[s];
     const isTurn = !G.done && G.toAct === s && !p.folded && !p.allIn;
@@ -458,7 +504,7 @@ function render() {
       <div class="seat-stack">${fmt(p.stack)} bb</div>
       ${p.betThisStreet > 0 ? chipStackHTML(p.betThisStreet, s) : ''}
       ${p.actionLabel ? `<div class="seat-action" style="background:${p.actionColor}">${p.actionLabel}</div>` : ''}
-      ${(p.revealed && !p.folded) ? `<div class="seat-handname">${handTypeName(p.hole, G.board)}</div>` : ''}
+      ${((p.isHero && G.board.length >= 3) || (p.revealed && !p.folded)) ? `<div class="seat-handname">${describeMade(p.hole, G.board)}</div>` : ''}
     </div>`;
   });
   tbl.innerHTML = html;
@@ -583,7 +629,7 @@ function renderReview(seatWin) {
       </div>`;
   } else {
     const winnerSeats = Object.keys(seatWin).map((s) => G.players[+s]);
-    const winNames = winnerSeats.map((p) => `${p.name}(${p.pos}) ${handTypeName(p.hole, G.board)}`).join('、');
+    const winNames = winnerSeats.map((p) => `${p.name}(${p.pos}) ${describeMade(p.hole, G.board)}`).join('、');
     resultHTML = `
       <div class="rv-result ${net >= 0 ? 'win' : 'lose'}">
         ${net >= 0 ? '🏆 +' + fmt(net) : '▼ ' + fmt(net)} bb
